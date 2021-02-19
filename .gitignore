@@ -1,0 +1,3 @@
+papers/*
+.vscode
+server/__pycache__
