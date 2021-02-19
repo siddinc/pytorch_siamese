@@ -1,3 +1,2 @@
-papers/*
 .vscode
-server/__pycache__
+src/__pycache__
