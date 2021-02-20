@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from torchsummary import summary
-
 from constants import (
   BATCH_SIZE,
 )
@@ -37,6 +36,7 @@ class SiameseNet(nn.Module):
   def forward_once(self, x):
     output = self.cnn(x)
     output = output.view(output.size()[0], -1)
+    
     return output
   
   def forward(self, input1, input2):
