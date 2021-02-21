@@ -7,7 +7,7 @@ from constants import (
   BATCH_SIZE,
 )
 from utils import to_device, get_default_device
-from training import SiameseNetBase
+from train import SiameseNetBase
 
 
 class SiameseNet(SiameseNetBase):
@@ -52,10 +52,10 @@ class SiameseNet(SiameseNetBase):
     return final_output
 
 
-def get_model(norm_deg, get_summary=False, summary_input=None, summary_batch_size=None, device=None):
+def get_model(norm_deg, get_summary=None, device=None):
   net = to_device(SiameseNet(norm_deg), device)
 
-  if get_summary == True:
-    summary(net, summary_input, batch_size=summary_batch_size)
+  if get_summary != None:
+    summary(net, get_summary[0], batch_size=get_summary[1])
 
   return net
