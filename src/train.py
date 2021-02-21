@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from dataset import (
   get_data_loader,
 )
+from network import get_model
 
 
 class TrainingLoop(nn.Module):
