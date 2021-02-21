@@ -59,15 +59,3 @@ def get_model(norm_deg, get_summary=False, summary_input=None, summary_batch_siz
     summary(net, summary_input, batch_size=summary_batch_size)
 
   return net
-
-
-if __name__ == "__main__":
-  device = get_default_device()
-
-  model = get_model(2, get_summary=False, device=device)
-
-  x = torch.randn((5, 1, 3000), device=device)
-  y = torch.randn((5, 1, 3000), device=device)
-
-  model.eval()
-  out = model(x, y)

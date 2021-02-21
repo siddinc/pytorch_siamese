@@ -1,13 +1,10 @@
 import torch
 
 from torch.utils.data import DataLoader, Dataset
-from utils import (
-  to_device,
-  DeviceDataLoader,
-)
+from utils import to_device, DeviceDataLoader
 
 
-class SiameseDataset(Dataset):
+class SiameseNetDataset(Dataset):
 
   def __init__(self, samples, labels, pred=False, transform=None):
     self.samples = samples
@@ -32,6 +29,6 @@ class SiameseDataset(Dataset):
 
 
 def get_data_loader(x, y, batch_size, pred=False, shuffle=False, num_workers=None, device=None):
-  ds = SiameseDataset(x, y, pred=pred)
+  ds = SiameseNetDataset(x, y, pred=pred)
   dl = DeviceDataLoader(DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers), device)
   return dl
