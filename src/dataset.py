@@ -1,14 +1,9 @@
-from torch.utils.data import DataLoader, random_split, Dataset
-from itertools import combinations
-import random
 import torch
-import numpy as np
 
-from constants import (
-  BATCH_SIZE,
-  N_EPOCHS,
-  N_WORKERS,
-  SHUFFLE,
+from torch.utils.data import DataLoader, Dataset
+from utils import (
+  to_device,
+  DeviceDataLoader,
 )
 
 
@@ -36,39 +31,7 @@ class SiameseDataset(Dataset):
     return sample1, sample2, pair_label
 
 
-def get_default_device():
-  if torch.cuda.is_available():
-    return torch.device('cuda')
-  else:
-    return torch.device('cpu')
-    
-def to_device(data, device):
-  if isinstance(data, (list, tuple)):
-    return [to_device(x, device) for x in data]
-  return data.to(device, non_blocking=True)
-
-
-class DeviceDataLoader():
-  def __init__(self, dl, device):
-    self.dl = dl
-    self.device = device
-        
-  def __iter__(self):
-    for b in self.dl:
-      yield to_device(b, self.device)
-
-  def __len__(self):
-    return len(self.dl)
-
-
-if __name__ == "__main__":
-  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-  pair_train = torch.randn((10, 2, 1, 3000))
-  label_train = torch.randn((10, 1))
-
-  train_ds = SiameseDataset(pair_train, label_train,  pred=False)
-  train_dl = DeviceDataLoader(DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=N_WORKERS), device)
-
-  for i, batch in enumerate(train_dl):
-    print(batch[2])
+def get_data_loader(x, y, batch_size, pred=False, shuffle=False, num_workers=None, device=None):
+  ds = SiameseDataset(x, y, pred=pred)
+  dl = DeviceDataLoader(DataLoader(ds, batch_size=batch_size, shuffle=shuffle, num_workers=num_workers), device)
+  return dl

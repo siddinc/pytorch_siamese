@@ -6,12 +6,16 @@ from torchsummary import summary
 from constants import (
   BATCH_SIZE,
 )
+from utils import to_device
 
 
 class SiameseNet(nn.Module):
 
-  def __init__(self):
+  def __init__(self, norm_deg=1):
     super(SiameseNet, self).__init__()
+
+    self.norm_deg = norm_deg
+
     self.cnn = nn.Sequential(
       self.conv1d_block(1, 16, 3, stride=1, padding=1),  #3000x16
       nn.MaxPool1d(2),  #1500x16
@@ -42,11 +46,15 @@ class SiameseNet(nn.Module):
   def forward(self, input1, input2):
     embedding1 = self.forward_once(input1)
     embedding2 = self.forward_once(input2)
-    distance = nn.PairwiseDistance(p=2)(embedding1, embedding2)
+    distance = nn.PairwiseDistance(p=self.norm_deg)(embedding1, embedding2)
     final_output = self.sigmoid(distance)
     return final_output
 
-if __name__ == "__main__":
-  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  net = SiameseNet().to(device)
-  summary(net, [(1, 3000), (1, 3000)], batch_size=16)
+
+def get_model(norm_deg, get_summary=False, summary_input=None, summary_batch_size=None, device=None):
+  net = to_device(SiameseNet(norm_deg), device)
+
+  if get_summary == True:
+    summary(net, summary_input, batch_size=summary_batch_size)
+
+  return net
