@@ -9,9 +9,9 @@ from tqdm import tqdm
 from utils import contrastive_loss, accuracy
 
 
-class MetricLearningBase(nn.Module):
+class SiameseNetBase(nn.Module):
   def __init__(self, norm_deg=1):
-    super(MetricLearningBase, self).__init__()
+    super(SiameseNetBase, self).__init__()
 
   def training_step(self, batch):
     samples1, samples2, pair_labels = batch
@@ -50,11 +50,11 @@ def get_lr(optimizer):
     return param_group["lr"]
 
 
-def fit(epochs, max_lr, model, train_loader, val_loader, weight_decay=0, grad_clip=None, opt_func=torch.optim.Adam):
+def fit(epochs, max_lr, model, train_loader, val_loader, weight_decay=0, opt=torch.optim.Adam):
   torch.cuda.empty_cache()
   history = []
 
-  optimizer = opt_func(model.parameters(), max_lr, weight_decay=weight_decay)
+  optimizer = opt(model.parameters(), max_lr, weight_decay=weight_decay)
   sched = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr, epochs=epochs, steps_per_epoch=len(train_loader))
 
   for epoch in tqdm(range(epochs)):

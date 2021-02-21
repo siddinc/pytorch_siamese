@@ -7,10 +7,10 @@ from constants import (
   BATCH_SIZE,
 )
 from utils import to_device, get_default_device
-from training import MetricLearningBase
+from training import SiameseNetBase
 
 
-class SiameseNet(MetricLearningBase):
+class SiameseNet(SiameseNetBase):
 
   def __init__(self, norm_deg=1):
     super(SiameseNet, self).__init__()
