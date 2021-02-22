@@ -10,14 +10,14 @@ from utils import to_device, get_default_device, SiameseNetBase
 
 
 class SiameseNet(SiameseNetBase):
-
-  def __init__(self, norm_deg=1):
+  def __init__(self, in_channels=1, norm_deg=1):
     super(SiameseNet, self).__init__()
 
     self.norm_deg = norm_deg
+    self.in_channels = in_channels
 
     self.cnn = nn.Sequential(
-      self.conv1d_block(1, 16, 3, stride=1, padding=1),  #3000x16
+      self.conv1d_block(self.in_channels, 16, 3, 1, 1),  #3000x16
       nn.MaxPool1d(2),  #1500x16
       self.conv1d_block(16, 32, 3, 1, 1),  #1500x32
       nn.MaxPool1d(2),  #750x32
@@ -51,8 +51,8 @@ class SiameseNet(SiameseNetBase):
     return final_output
 
 
-def get_model(norm_deg, get_summary=None, device=None):
-  net = to_device(SiameseNet(norm_deg), device)
+def get_model(in_channels, norm_deg, get_summary=None, device=None):
+  net = to_device(SiameseNet(in_channels, norm_deg), device)
 
   if get_summary != None:
     summary(net, get_summary[0], batch_size=get_summary[1])

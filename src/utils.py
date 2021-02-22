@@ -40,7 +40,7 @@ def accuracy(y_pred, y_true):
 
 
 class SiameseNetBase(nn.Module):
-  def __init__(self, norm_deg=1):
+  def __init__(self):
     super(SiameseNetBase, self).__init__()
 
   def training_step(self, batch):
