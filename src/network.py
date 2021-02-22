@@ -6,8 +6,7 @@ from torchsummary import summary
 from constants import (
   BATCH_SIZE,
 )
-from utils import to_device, get_default_device
-from train import SiameseNetBase
+from utils import to_device, get_default_device, SiameseNetBase
 
 
 class SiameseNet(SiameseNetBase):
