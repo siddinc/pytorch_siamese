@@ -1,5 +1,15 @@
 import torch
-import torch.nn as nn
+import math
+
+from tqdm import tqdm
+from torch.optim import Adam, lr_scheduler
+from constants import (
+  BETAS,
+  WEIGHT_DECAY,
+  AMSGRAD,
+  N_EPOCHS,
+  MARGIN,
+)
 
 
 class DeviceDataLoader():
@@ -35,34 +45,47 @@ def contrastive_loss(y_pred, y_true, margin=1.0):
 
 
 def accuracy(y_pred, y_true):
-  y_pred = (y_pred > 0.5).type(y_true.dtype)
-  return torch.tensor(torch.sum(y_pred == y_true).item() / len(y_true))
+  pred = (y_pred < 0.5).type(y_true.dtype)
+  return torch.tensor(torch.sum(pred == y_true).item() / len(y_true))
 
 
-class SiameseNetBase(nn.Module):
-  def __init__(self):
-    super(SiameseNetBase, self).__init__()
+def lr_finder(model, train_loader, init_value=1e-8, final_value=1., beta = 0.98):
+  optimizer = Adam(model.parameters(), lr=init_value, betas=BETAS, weight_decay=WEIGHT_DECAY, amsgrad=AMSGRAD)
 
-  def training_step(self, batch):
+  num = len(train_loader)-1
+  mult = (final_value / init_value) ** (1/num)
+  lr = init_value
+  optimizer.param_groups[0]['lr'] = lr
+  avg_loss = 0.
+  best_loss = 0.
+  batch_num = 0
+  losses = []
+  lrs = []
+
+  model.train()
+  for batch in tqdm(train_loader, total=len(train_loader), leave=False):
+    batch_num += 1
+
     samples1, samples2, pair_labels = batch
-    out = self(samples1, samples2)
-    loss = contrastive_loss(out, pair_labels, 1.0)
-    return loss
+    out = model(samples1, samples2)
+    loss = contrastive_loss(out, pair_labels, MARGIN)
 
-  def validation_step(self, batch):
-    samples1, samples2, pair_labels = batch
-    out = self(samples1, samples2)
-    loss = contrastive_loss(out, pair_labels, 1.0)
-    acc = accuracy(out, pair_labels)
-    return {"val_loss": loss.detach(), "val_acc": acc}
+    avg_loss = beta * avg_loss + (1-beta) *loss.item()
+    smoothed_loss = avg_loss / (1 - beta**batch_num)
 
-  def validation_epoch_end(self, outputs):
-    batch_losses = [x["val_loss"] for x in outputs]
-    epoch_loss = torch.stack(batch_losses).mean()
-    batch_accs = [x["val_acc"] for x in outputs]
-    epoch_acc = torch.stack(batch_accs).mean()
-    return {'val_loss': epoch_loss.item(), 'val_acc': epoch_acc.item()}
+    if batch_num > 1 and smoothed_loss > 4 * best_loss:
+        lrs, losses
 
-  def epoch_end(self, epoch=None, result=None):
-    print("Epoch [{}], last_lr: {:.5f}, train_loss: {:.4f}, val_loss: {:.4f}, val_acc: {:.4f}".format(
-      epoch, result['lrs'][-1], result['train_loss'], result['val_loss'], result['val_acc']))
+    if smoothed_loss < best_loss or batch_num==1:
+        best_loss = smoothed_loss
+
+    losses.append(smoothed_loss)
+    lrs.append(lr)
+
+    loss.backward()
+    optimizer.step()
+
+    lr *= mult
+    optimizer.param_groups[0]['lr'] = lr
+
+  return lrs, losses
