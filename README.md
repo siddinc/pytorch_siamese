@@ -1,1 +1,1 @@
-# eeg2vec: EEG-based Biometric Authentication
+# PyTorch Implementation of Convolutional Siamese Neural Networks for EEG-based Biometric Recognition.
